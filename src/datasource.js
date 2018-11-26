@@ -71,13 +71,41 @@ export class GenericDatasource {
     });
   }
 
-  metricFindQuery(query) {
+  listMaterializedViews(query) {
     var interpolated = {
         target: this.templateSrv.replace(query, null, 'regex')
     };
 
     return this.doRequest({
-      url: this.url + '/search',
+      url: this.url + '/list',
+      data: interpolated,
+      method: 'POST',
+    }).then(function(result) {
+      return result.data;
+    });
+  }
+
+  getColumns(query, mvId) {
+    var interpolated = {
+        target: this.templateSrv.replace(query, null, 'regex'),
+        mvId: mvId
+    };
+
+    return this.doRequest({
+      url: this.url + '/columns',
+      data: interpolated,
+      method: 'POST',
+    }).then(this.mapToTextValue);
+  }
+
+  getKeys(query, mvId) {
+    var interpolated = {
+        target: this.templateSrv.replace(query, null, 'regex'),
+        mvId: mvId
+    };
+
+    return this.doRequest({
+      url: this.url + '/keys',
       data: interpolated,
       method: 'POST',
     }).then(this.mapToTextValue);
@@ -110,6 +138,9 @@ export class GenericDatasource {
     var targets = _.map(options.targets, target => {
       return {
         target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+        mvId: this.templateSrv.replace(target.mv, options.scopedVars, 'regex'),
+        column: this.templateSrv.replace(target.column, options.scopedVars, 'regex'),
+        key: this.templateSrv.replace(target.key, options.scopedVars, 'regex'),
         refId: target.refId,
         hide: target.hide,
         type: target.type || 'timeserie'

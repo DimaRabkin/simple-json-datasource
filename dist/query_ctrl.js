@@ -27,14 +27,22 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
     _this.scope = $scope;
     _this.target.target = _this.target.target || 'select metric';
+    _this.target.mv = _this.target.mv || 'Select Materialized View';
+    _this.target.column = _this.target.column || 'Select Column';
+    _this.target.key = _this.target.key || 'Select Key';
     _this.target.type = _this.target.type || 'timeserie';
     return _this;
   }
 
   _createClass(GenericDatasourceQueryCtrl, [{
-    key: 'getOptions',
-    value: function getOptions(query) {
-      return this.datasource.metricFindQuery(query || '');
+    key: 'listMaterializedViews',
+    value: function listMaterializedViews(query) {
+      return this.datasource.listMaterializedViews(query || '');
+    }
+  }, {
+    key: 'getColumns',
+    value: function getColumns(query) {
+      return this.target.mv !== 'Select Materialized View' ? this.datasource.getColumns(query || '', this.target.mv) : [];
     }
   }, {
     key: 'toggleEditorMode',
@@ -45,6 +53,38 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'onChangeInternal',
     value: function onChangeInternal() {
       this.panelCtrl.refresh(); // Asks the panel to refresh data.
+    }
+  }, {
+    key: 'onSetMv',
+    value: function onSetMv() {
+      var _this2 = this;
+
+      this.getColumns('').then(function (x) {
+        _this2.target.columns = x;
+        _this2.onChangeInternal();
+      });
+      this.getKeys('').then(function (x) {
+        _this2.target.keys = x;
+        _this2.onChangeInternal();
+      });
+    }
+  }, {
+    key: 'getKeys',
+    value: function getKeys(query) {
+      return this.target.mv !== 'Select Materialized View' ? this.datasource.getKeys(query || '', this.target.mv) : [];
+    }
+  }, {
+    key: 'getKeys2',
+    value: function getKeys2(query) {
+      return Promise.resolve(this.target.keys) || this.getKeys(query);
+    }
+  }, {
+    key: 'onColumnsChanged',
+    value: function onColumnsChanged() {}
+  }, {
+    key: 'getColumns2',
+    value: function getColumns2(query) {
+      return Promise.resolve(this.target.columns) || this.getColumns(query);
     }
   }]);
 

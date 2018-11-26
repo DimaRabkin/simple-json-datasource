@@ -93,14 +93,44 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: 'metricFindQuery',
-    value: function metricFindQuery(query) {
+    key: 'listMaterializedViews',
+    value: function listMaterializedViews(query) {
       var interpolated = {
         target: this.templateSrv.replace(query, null, 'regex')
       };
 
       return this.doRequest({
-        url: this.url + '/search',
+        url: this.url + '/list',
+        data: interpolated,
+        method: 'POST'
+      }).then(function (result) {
+        return result.data;
+      });
+    }
+  }, {
+    key: 'getColumns',
+    value: function getColumns(query, mvId) {
+      var interpolated = {
+        target: this.templateSrv.replace(query, null, 'regex'),
+        mvId: mvId
+      };
+
+      return this.doRequest({
+        url: this.url + '/columns',
+        data: interpolated,
+        method: 'POST'
+      }).then(this.mapToTextValue);
+    }
+  }, {
+    key: 'getKeys',
+    value: function getKeys(query, mvId) {
+      var interpolated = {
+        target: this.templateSrv.replace(query, null, 'regex'),
+        mvId: mvId
+      };
+
+      return this.doRequest({
+        url: this.url + '/keys',
         data: interpolated,
         method: 'POST'
       }).then(this.mapToTextValue);
@@ -138,6 +168,9 @@ var GenericDatasource = exports.GenericDatasource = function () {
       var targets = _lodash2.default.map(options.targets, function (target) {
         return {
           target: _this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+          mvId: _this.templateSrv.replace(target.mv, options.scopedVars, 'regex'),
+          column: _this.templateSrv.replace(target.column, options.scopedVars, 'regex'),
+          key: _this.templateSrv.replace(target.key, options.scopedVars, 'regex'),
           refId: target.refId,
           hide: target.hide,
           type: target.type || 'timeserie'
